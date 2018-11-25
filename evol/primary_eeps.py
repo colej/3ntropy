@@ -2,7 +2,7 @@ import numpy as np
 from scipy.interpolate import PchipInterpolator
 import h5py
 
-from entropy.mesa import hdf5_io_support as h5io
+from entropy3.mesa import hdf5_io_support as h5io
 
 def locate_primary_eeps(track):
     pms_to_zams_eep = list(locate_pms_to_zams_eep(track))[0]

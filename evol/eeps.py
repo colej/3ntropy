@@ -2,9 +2,9 @@ import numpy as np
 from scipy.interpolate import PchipInterpolator
 import h5py
 
-from entropy.mesa import hdf5_io_support as h5io
-from entropy.evol import primary_eeps as eepe
-from entropy.evol import secondary_eeps as eese
+from entropy3.mesa import hdf5_io_support as h5io
+from entropy3.evol import primary_eeps as eepe
+from entropy3.evol import secondary_eeps as eese
 
 
 def construct_eep(track,npoints=100,keys=None):
