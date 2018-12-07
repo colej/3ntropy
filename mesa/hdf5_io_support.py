@@ -1,6 +1,6 @@
-## This script takes the GYRE formated output from MESA 
+## This script takes the GYRE formated output from MESA
 ## and converts it to the HDF5 GSM input that GYRE can
-## recognize. 
+## recognize.
 ##
 ##
 ## C. Johnston - 12.02.2018
@@ -25,7 +25,7 @@ def get_gyre_attributes_from_MESA_format(filename):
     dtype_f64_le     = np.dtype('<f8') ## 64-bit float
 
 
-    ## This order corresponds to the order in which the variables in the 
+    ## This order corresponds to the order in which the variables in the
     ## first line are read in from the MESA format.
     ## This order is n, mass, radius, luminosity, and version number * 100
     ## NOTICE: the version number from MESA format is 100 whereas the version
@@ -58,11 +58,11 @@ def get_gyre_datasets_from_MESA_format(filename):
     gamma_1,nabla_ad,delta,kap,kkT,kkRho = [],[],[],[],[],[]
     eps,eeT,eeRho,omega_rot              = [],[],[],[]
 
-    ## Each column of the MESA formatted output corresponds to a 
-    ## different dataset that will be added to the GSM file. 
+    ## Each column of the MESA formatted output corresponds to a
+    ## different dataset that will be added to the GSM file.
     ## NOTICE: The ordering is different, so we need to take care of
     ## the order we Extract in, however, the order in which we add
-    ## datasets later is not important. 
+    ## datasets later is not important.
     ##
     ## We loop over each line and append each value to its appropriate array
     ## while casting it as the proper data-type.
@@ -200,18 +200,18 @@ def convert_gyre_input_from_MESA_format(filename,name_to_save_to):
                             dataset_delta, dataset_nabla, dataset_kap, dataset_kap_kap_T,
                             dataset_kap_kap_rho, dataset_eps, dataset_eps_eps_T,
                             dataset_eps_eps_rho, dataset_Omega_rot ]
-    
-    
+
+
     try:
         ## Open the hdf5 file
         hdf5_file = h5py.File( name_to_save_to , 'a' )
-        
+
         ## Loop over the attribute list and add each attribute to the "root" group
         ## of the hdf5 file
         for attr in attribute_list:
             print('Writing %s with value '%attr[0], attr[1],'as ',attr[2])
             hdf5_file.attrs.create(attr[0],attr[1],dtype=attr[2])
-        
+
         ## Loop over the dataset list and add each dataset to the "root" group
         ## of the hdf5 file
         for dataset in dataset_list:
@@ -239,7 +239,7 @@ def get_profile_attributes(filename):
     ## The dtype for the first row is i32
     ## The second row will be the attribute names
     ## The third row will have dtypes: i64 / i64 / f64 for the rest
-    
+
     ## We can read in the columns as recarrays and then convert them later!
 
     with open(filename,'r') as gyre_file:
@@ -247,13 +247,13 @@ def get_profile_attributes(filename):
         attrs_data   = []
         attrs_dtypes = []
         attrs_names  = [ name for name in attrs_line[0].strip().split() ]
-        
+
         for ii,value in enumerate(attrs_line[1].strip().split()):
             if ( (ii==0) or (ii==1)):
                 select_dtype = dtype_i64_le
             else:
                 select_dtype = dtype_f64_le
-            
+
             attrs_cast = np.array([value]).astype(select_dtype,order='F')
             attrs_data.append( attrs_cast[0] )
             attrs_dtypes.append( select_dtype )
@@ -279,7 +279,7 @@ def get_profile_datasets(filename):
 
 
 def convert_profile_to_hdf5(filename,name_to_save_to):
-    ## This function converts a MESA Model to a compressed hdf5 file. 
+    ## This function converts a MESA Model to a compressed hdf5 file.
     ## The first 3 lines are read in to be stored as attributes
     ## The remaining data will be stored as datasets
 
@@ -289,7 +289,7 @@ def convert_profile_to_hdf5(filename,name_to_save_to):
     dtype_f64_le     = np.dtype('<f8') ## 64-bit float
 
     #name_to_save_to = filename+'.h5'
-    
+
     ## Get attribute names and values
     attrs_names, attrs_values, attrs_dtypes = get_profile_attributes(filename)
 
@@ -325,7 +325,7 @@ def get_history_attributes(filename):
     ## The dtype for the first row is i32
     ## The second row will be the attribute names
     ## The third row will have dtypes: i64 / i64 / f64 for the rest
-    
+
     ## We can read in the columns as recarrays and then convert them later!
 
     with open(filename,'r') as gyre_file:
@@ -333,21 +333,21 @@ def get_history_attributes(filename):
         attrs_data   = []
         attrs_dtypes = []
         attrs_names  = [ name for name in attrs_line[0].strip().split() ]
-        
+
         for ii,value in enumerate(attrs_line[1].strip().split()):
             if (ii==0):
                 select_dtype = dtype_i64_le
             else:
                 select_dtype = dtype_f64_le
-            
+
             attrs_cast = np.array([value]).astype(select_dtype,order='F')
             attrs_data.append( attrs_cast[0] )
             attrs_dtypes.append( select_dtype )
 
     attrs_names  = np.hstack([attrs_names ])
     attrs_data   = np.hstack([attrs_data  ])
-    attrs_dtypes = np.hstack([attrs_dtypes])    
-    
+    attrs_dtypes = np.hstack([attrs_dtypes])
+
     return attrs_names, attrs_data, attrs_dtypes
 
 
@@ -367,8 +367,8 @@ def get_history_datasets(filename):
 
 
 def convert_history_to_hdf5(filename,name_to_save_to):
-    
-    ## This function converts a MESA history file to a compressed hdf5 file. 
+
+    ## This function converts a MESA history file to a compressed hdf5 file.
     ## The first 3 lines are read in to be stored as attributes
     ## The remaining data will be stored as datasets
 
@@ -378,7 +378,7 @@ def convert_history_to_hdf5(filename,name_to_save_to):
     dtype_f64_le     = np.dtype('<f8') ## 64-bit float
 
     #name_to_save_to = filename+'.h5'
-    
+
     ## Get attribute names and values
     attrs_names, attrs_values, attrs_dtypes = get_history_attributes(filename)
 
@@ -391,7 +391,7 @@ def convert_history_to_hdf5(filename,name_to_save_to):
         ## Write attributes to 'root' group
         for ii,attr in enumerate(attrs_names):
             hdf5_file.attrs.create(attr,attrs_values[ii],dtype=attrs_dtypes[ii])
-        
+
         for name in datasets.dtype.names:
             hdf5_file.create_dataset(name,data=datasets[name],dtype=dtype_f64_le)
 
@@ -399,8 +399,8 @@ def convert_history_to_hdf5(filename,name_to_save_to):
         return True
     except:
         return False
-    
-    
+
+
 #============================================================================================================================
 #===  This section contains functions to read compressed HDF5 MESA profiles & History Files
 #============================================================================================================================
@@ -408,9 +408,9 @@ def convert_history_to_hdf5(filename,name_to_save_to):
 def read_hdf5_profile(filename,fields=None):
 
     ## This function reads MESA profiles stored in HDF5 format
-    
+
     profile = h5py.File(filename,'r')
-    
+
     attr_keys = list(profile.attrs.keys())
     keys = list(profile.keys())
 
@@ -466,6 +466,4 @@ def read_hdf5_history(filename,fields=None,return_attributes=False):
 
     track.close()
 
-    return r_attrs,r_quantities    
-    
-
+    return r_attrs, r_quantities
