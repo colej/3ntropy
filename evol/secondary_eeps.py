@@ -1,5 +1,5 @@
 import numpy as np
-from scipy.interpolate import PchipInterpolator
+from scipy.interpolate import PchipInterpolator,interp1d,KroghInterpolator,Akima1DInterpolator,CubicSpline,BarycentricInterpolator
 import h5py
 
 from entropy3.mesa import hdf5_io_support as h5io
@@ -29,7 +29,7 @@ def get_xj(primary_eep,xkeys):
     # xkeys --> the field names for the quantities we want to use in the weight function
     xj = []
     for key in xkeys:
-        xj.append( np.array( [ list( get_field_from_primary_eep(primary_eep,key) ) ] ) )
+        xj.append( np.array( list( get_field_from_primary_eep(primary_eep,key) )[0] ) )
     yield xj
 
 
@@ -48,17 +48,21 @@ def get_field_from_primary_eep(primary_eep,key):
 
 def make_interpolation_function(x, y):
     # This function creates an interpolation object to be called later
-    i_func = PchipInterpolator(x, y, extrapolate=False)
+    # i_func = PchipInterpolator(x, y, extrapolate=False)
+    # i_func = interp1d(x,y,kind='cubic')
+    # i_func = KroghInterpolator(x,y)
+    i_func = Akima1DInterpolator(x,y)
+    # i_func = CubicSpline(x,y)
     yield i_func
 
 
-def get_tracks_interpolated_on_distance_function(distance,primary_eep):
+def get_tracks_interpolated_on_distance_function(distance,primary_eep,keys):
     # This function makes a dictionary where each field is an interpolation
     # object where the a given field from the original evolutionary track is
     # interpolated on the weighted distance function
     interpolated_track = {}
-    for key in primary_eep:
-        interpolated_track[key] = make_interpolation_function(distance,primary_eep[key])
+    for key in keys:
+        interpolated_track[key] = list(make_interpolation_function(distance,primary_eep[key]))[0]
     yield interpolated_track
 
 
@@ -70,16 +74,16 @@ def get_deltas(distance,npoints):
     yield deltas
 
 
-def calculate_secondary_eeps(interpolated_primary_eep,deltas):
+def calculate_secondary_eeps(interpolated_primary_eep,deltas,keys):
     # This function creates the new equidistantly spaced interpolated
     # evolutionary in all quantities
     secondary_eeps = {}
-    for key in interpolated_primary_eep:
+    for key in keys:
         secondary_eeps[key] = interpolated_primary_eep[key](deltas)
     yield secondary_eeps
 
 
-def generate_secondary_eeps(primary_eep,npoints=150):
+def generate_secondary_eeps(primary_eep,keys,npoints=200):
     """
     This routine will take a primary eeps per a single track / starself, and
     resample it to generate N=npoints secondary eeps within the given primary eep.
@@ -89,12 +93,12 @@ def generate_secondary_eeps(primary_eep,npoints=150):
 
     """
 
-    xkeys=['star_age','log_L','log_Teff','log_center_T','log_center_Rho']
+    xkeys=['star_age','log_L','log_Teff','log_cntr_T','log_cntr_Rho']
     weights  = [0.05,0.125,2.,1.,1.]
 
     # Here, we make the x_j array, which consists of all the quantities for which
     # we want to use in our weighted distance function, as listed in the xkeys array.
-    xj = list(get_xj(primary_eeps,xkeys))[0]
+    xj = list(get_xj(primary_eep,xkeys))[0]
 
     # Next, we want to calculate the distance covered by the given primary eep
     distance = list(distance_function(xj,weights))[0]
@@ -102,10 +106,10 @@ def generate_secondary_eeps(primary_eep,npoints=150):
     # interpolate primary eep in all quantities
     # Only return the interpolated function for each quantity. The new x values
     # still need to be passed to each function for it to run.
-    interpolated_primary_eep = list(get_tracks_interpolated_on_distance_function(distance,primary_eep))[0]
+    interpolated_primary_eep = list(get_tracks_interpolated_on_distance_function(distance,primary_eep,keys))[0]
 
     deltas = list(get_deltas(distance,npoints))[0]
 
-    secondary_eeps = list(calculate_secondary_eeps(interpolated_primary_eep,deltas))[0]
+    secondary_eeps = list(calculate_secondary_eeps(interpolated_primary_eep,deltas,keys))[0]
 
     yield secondary_eeps
