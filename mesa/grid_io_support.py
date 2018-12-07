@@ -57,7 +57,8 @@ def make_filenames(adjpars, summary_file='./grid.summary', inlist_prefix=None, g
         list_str.append(np.hstack(str_combination))
 
     for ii,combination in enumerate(itertools.product(*parts)):
-        stack         = np.hstack(combination)
+
+        stack = np.hstack(combination)
 
         if grid_type is not None: history_name = grid_type+'_'
         else: history_name = 'gridpoint_'
@@ -152,7 +153,7 @@ def make_filenames(adjpars, summary_file='./grid.summary', inlist_prefix=None, g
 
         summary_file_open.write(line)
 
-	worker_line = '%s,%s,%s\n'%(inlist_name,dir_name,point_name)
+        worker_line = '%s,%s,%s\n'%(inlist_name,dir_name,point_name)
         worker_file_open = open(worker_name,'a')
         worker_file_open.write(worker_line)
         worker_file_open.close()
