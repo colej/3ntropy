@@ -50,9 +50,8 @@ def make_interpolation_function(x, y):
     # This function creates an interpolation object to be called later
     # i_func = PchipInterpolator(x, y, extrapolate=False)
     # i_func = interp1d(x,y,kind='cubic')
-    # i_func = KroghInterpolator(x,y)
     i_func = Akima1DInterpolator(x,y)
-    # i_func = CubicSpline(x,y)
+
     yield i_func
 
 
