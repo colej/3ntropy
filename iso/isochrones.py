@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.interpolate import PchipInterpolator,interp1d,Akima1DInterpolator
+from progress.bar import Bar
 
 from entropy3.general.smoothing import smooth
 
@@ -93,18 +94,20 @@ def get_tracks_per_eep(tracks,npoints,keys):
 
 
 
-def construct_isochrones(eep_tracks,i_ages,keys,savename):
+def construct_isochrones(eep_tracks,i_ages,keys,savename,pars):
 
     #-> Sort tracks based on mass to ensure ease later
     tracks = list(sort_tracks_on_mass(eep_tracks))[0]
     ntracks = len(tracks)
     npoints = len( tracks[0]['star_age'] )
+    nages = len(i_ages)
 
     #-> create a dictionary where each age is a dictionary for all quantities listed above
     isochrones = list(make_isochrones_dict(i_ages,keys))[0]
     isochrones = {'age-{0:04d}'.format(ii): {key: np.empty(npoints) for key in keys} for ii in range(len(i_ages)) }
     eep_tracks = {'eep-{}'.format(n):{key: np.empty(ntracks) for key in keys} for n in range(npoints)}
     eep_mass_age_relations = {'eep-{}'.format(n):{'mass-init': np.empty(ntracks), 'age':np.empty(ntracks)} for n in range(npoints)}
+
 
     print('--> Building tracks in all quantities per EEP')
     print('--> Building M_init - Age relation per EEP')
@@ -134,17 +137,32 @@ def construct_isochrones(eep_tracks,i_ages,keys,savename):
     print('\t--> All interpolation functions constructed')
 
     print('--> Looping over all ages to interpolate isochrones')
+    ibar = Bar('Calculating...',max=nages)
     for ii,i_age in enumerate(i_ages):
-        print('Constructing isochrone at {:.1f} Myr'.format(i_age*1e-6))
+        # print('Constructing isochrone at {:.1f} Myr'.format(i_age*1e-6))
         mass_values = [ interpolated_mass_age_relations['eep-{}'.format(n)](i_age) for n in range(npoints) ]
         for key in keys:
             for n,m_val in enumerate(mass_values):
                 isochrones['age-{0:04d}'.format(ii)][key][n] = interpolated_eep_tracks['eep-{}'.format(n)][key](m_val)
-        plt.plot(isochrones['age-{0:04d}'.format(ii)]['log_Teff'],isochrones['age-{0:04d}'.format(ii)]['log_g'],'r--')
+        ibar.next()
+    ibar.finish()
     print('\t--> All isochrones constructed')
-    plt.ylim(plt.ylim()[::-1])
-    plt.xlim(plt.xlim()[::-1])
-    plt.show()
+
+    fig,ax = plt.subplots(1,1,figsize=(6.6957,6.6957))
+    for track in tracks:
+        ax.plot(track['log_Teff'],track['log_L'],'k-')
+    for ii in range(len(i_ages)):
+        ax.plot(isochrones['age-{0:04d}'.format(ii)]['log_Teff'],isochrones['age-{0:04d}'.format(ii)]['log_L'],'r--',alpha=0.5)
+
+    # ax.set_ylim(ax.get_ylim()[::-1])
+    ax.set_xlim(ax.get_xlim()[::-1])
+    ax.set_xlabel(r'$\log T_{\rm eff}/K$',fontsize='14')
+    ax.set_ylabel(r'$\log L/{L_{\odot}}$',fontsize='14')
+    grid_type,ov_str,zini_str,mlt_str,fov_str,ldm_str,plot_save_path = pars
+    zini,mlt,fov,ldm = float(zini_str)*1e-4,float(mlt_str)*1e-2,float(fov_str)*1e-4,float(ldm_str)*1e-2
+    ax.set_title(r'$Z_{\rm ini}=%f ; \alpha_{\rm MLT}=%f ; %s_{\rm ov}=%f ; \log(D_{\rm ext})=%f$'%(zini,mlt,ov_str,fov,ldm),fontsize=12)
+    fig.savefig('{0}{1}_Zini{2}_MLT{3}_ov{4}_logDext{5}-isochrones.png'.format(plot_save_path,grid_type,zini_str,mlt_str,fov_str,ldm_str))
+    fig.clear()
 
 
 
