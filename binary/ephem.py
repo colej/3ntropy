@@ -1,7 +1,7 @@
 import numpy as np
 
 
-def time_to_ph(time, period=None, t0=None):
+def time_to_ph(time, period=None, t0=0.):
     '''
     converts time to phase from input ephemeris
     DOES NOT ACCOUNT FOR BARYCENTRIC OR HELIOCENTRIC CORRECTION
