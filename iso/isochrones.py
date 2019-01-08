@@ -111,6 +111,7 @@ def construct_isochrones(eep_tracks,i_ages,keys,savename,pars):
 
     print('--> Building tracks in all quantities per EEP')
     print('--> Building M_init - Age relation per EEP')
+    ebar = Bar('Building EEPs',max=npoints)
     for n in range(npoints):
         for ii,track in enumerate(tracks):
             eep_mass_age_relations['eep-{}'.format(n)]['mass-init'][ii] = track['star_mass'][0]
@@ -118,22 +119,28 @@ def construct_isochrones(eep_tracks,i_ages,keys,savename,pars):
 
             for key in keys:
                 eep_tracks['eep-{}'.format(n)][key][ii] = track[key][n]
+        ebar.next()
+    ebar.finish()
 
-    print('\t--> All tracks and M_init - Age relations built')
     print('--> Creating interpolation functions for all tracks and M_init - Age relations')
     interpolated_mass_age_relations = {}
     interpolated_eep_tracks = {'eep-{}'.format(n): { key: [] for key in keys} for n in range(npoints)}
+    ifunc_bar =  Bar('Generating...',max=npoints)
     for n in range(npoints):
         x = eep_mass_age_relations['eep-{}'.format(n)]['age']
         y = eep_mass_age_relations['eep-{}'.format(n)]['mass-init']
         x,y = list(sort_y_on_x(x,y))
-        interpolated_mass_age_relations['eep-{}'.format(n)] = Akima1DInterpolator(x,y)
+        # interpolated_mass_age_relations['eep-{}'.format(n)] = Akima1DInterpolator(x,y)
+        interpolated_mass_age_relations['eep-{}'.format(n)] = list(make_interpolation_function(x,y))[0]
         for key in keys:
             xx = eep_tracks['eep-{}'.format(n)]['star_mass']
             xy = eep_tracks['eep-{}'.format(n)][key]
             xx,xy = list(sort_y_on_x(xx,xy))
-            ai_func = Akima1DInterpolator(xx,xy)
+            # ai_func = Akima1DInterpolator(xx,xy)
+            ai_func = list(make_interpolation_function(xx,xy))[0]
             interpolated_eep_tracks['eep-{}'.format(n)][key] = ai_func
+        ifunc_bar.next()
+    ifunc_bar.finish()
     print('\t--> All interpolation functions constructed')
 
     print('--> Looping over all ages to interpolate isochrones')
@@ -172,6 +179,8 @@ def construct_isochrones(eep_tracks,i_ages,keys,savename,pars):
         for ii,i_age in enumerate(i_ages):
             for n in range(len(isochrones['age-{0:04d}'.format(ii)]['star_mass'])):
                 # print(n,'/',len(isochrones['age-%i'%cc]['star_mass']))
-                fout.write( '%f %s \n'%(i_age,' '.join( [ '%.8f'%isochrones['age-{0:04d}'.format(ii)][key][n] for key in keys] )) )
+                line = '%f %s \n'%(i_age,' '.join( [ '%.8f'%isochrones['age-{0:04d}'.format(ii)][key][n] for key in keys] ))
+                if ' nan ' not in line:
+                    fout.write( line )
 
     return
