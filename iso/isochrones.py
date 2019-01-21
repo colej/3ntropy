@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 import matplotlib.pyplot as plt
 from scipy.interpolate import PchipInterpolator,interp1d,Akima1DInterpolator
 from progress.bar import Bar
@@ -103,8 +104,9 @@ def construct_isochrones(eep_tracks,i_ages,keys,savename,pars):
     nages = len(i_ages)
 
     #-> create a dictionary where each age is a dictionary for all quantities listed above
-    isochrones = list(make_isochrones_dict(i_ages,keys))[0]
+    # isochrones = list(make_isochrones_dict(i_ages,keys))[0]
     isochrones = {'age-{0:04d}'.format(ii): {key: np.empty(npoints) for key in keys} for ii in range(len(i_ages)) }
+    isochrones_df = pd.DataFrame( { key: [] for key in np.hstack([['AGEMyr'],keys]) } )
     eep_tracks = {'eep-{}'.format(n):{key: np.empty(ntracks) for key in keys} for n in range(npoints)}
     eep_mass_age_relations = {'eep-{}'.format(n):{'mass-init': np.empty(ntracks), 'age':np.empty(ntracks)} for n in range(npoints)}
 
@@ -154,6 +156,12 @@ def construct_isochrones(eep_tracks,i_ages,keys,savename,pars):
         ibar.next()
     ibar.finish()
     print('\t--> All isochrones constructed')
+    for ii,i_age in enumerate(i_ages):
+        entry = {}
+        entry['AGEMyr'] = np.ones_like(isochrones['age-{0:04d}'.format(ii)]['star_mass'])*i_age
+        for key in keys:
+            entry[key] = isochrones['age-{0:04d}'.format(ii)][key]
+        isochrones_df = isochrones_df.append(pd.DataFrame(entry),ignore_index=True)
 
     fig,ax = plt.subplots(1,1,figsize=(6.6957,6.6957))
     for track in tracks:
@@ -172,15 +180,16 @@ def construct_isochrones(eep_tracks,i_ages,keys,savename,pars):
     fig.clear()
 
 
-
-    with open(savename,'w') as fout:
-        header = '# AGE[Myr]  %s'%' '.join( [ '%s'%key for key in keys ] )
-        fout.write(header+'\n')
-        for ii,i_age in enumerate(i_ages):
-            for n in range(len(isochrones['age-{0:04d}'.format(ii)]['star_mass'])):
-                # print(n,'/',len(isochrones['age-%i'%cc]['star_mass']))
-                line = '%f %s \n'%(i_age,' '.join( [ '%.8f'%isochrones['age-{0:04d}'.format(ii)][key][n] for key in keys] ))
-                if ' nan ' not in line:
-                    fout.write( line )
+    isochrones_df = isochrones_df.dropna()
+    isochrones_df.to_csv(savename,sep='\t',index=False)
+    # with open(savename,'w') as fout:
+    #     header = '# AGE[Myr]  %s'%' '.join( [ '%s'%key for key in keys ] )
+    #     fout.write(header+'\n')
+    #     for ii,i_age in enumerate(i_ages):
+    #         for n in range(len(isochrones['age-{0:04d}'.format(ii)]['star_mass'])):
+    #             # print(n,'/',len(isochrones['age-%i'%cc]['star_mass']))
+    #             line = '%f %s \n'%(i_age,' '.join( [ '%.8f'%isochrones['age-{0:04d}'.format(ii)][key][n] for key in keys] ))
+    #             if ' nan ' not in line:
+    #                 fout.write( line )
 
     return
