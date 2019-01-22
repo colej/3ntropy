@@ -1,5 +1,40 @@
 import numpy as np
 
+def sort_on_x(x,y,z=None):
+    if z is not None:
+        zipp = list(zip(x,y,z)).sort(key=lambda x:x[0])
+        x,y,z = list(zip(*zipp))
+    else:
+        zipp = list(zip(x,y)).sort(key=lambda x:x[0])
+        x,y = list(zip(*zipp))
+        z = None
+    yield x
+    yield y
+    yield z
+
+
+def run_alias(x,y,z=None):
+    ax,ay,az = [],[],[]
+    for ii in range(len(x)):
+        if x[ii] < -0.4:
+                ax.append(x[ii]+1)
+                ay.append(y[ii])
+                if z is not None:
+                    az.append(z[ii])
+        if x[ii] > 0.4:
+                ax.append(x[ii]-1)
+                ay.append(y[ii])
+                if z is not None:
+                    az.append(z[ii])
+
+    if z is not None:
+        x,y,z = list(sort_on_x(np.append(x,ax),np.append(y,ay),np.append(z,az)))
+    else:
+        x,y,z = list(sort_on_x(np.append(x,ax),np.append(y,ay),None))
+
+    yield x
+    yield y
+    yield z
 
 def time_to_ph(time, period=None, t0=0.):
     '''
@@ -14,10 +49,6 @@ def time_to_ph(time, period=None, t0=0.):
     output: phase (float or array)
     '''
 
-    if t0 > 2400000:
-        t0 -= 2400000.
-    if time[0] > 2400000:
-        time = np.array( [t-2400000. for t in time] )
     ph = np.array( [ -0.5+( ( t-t0-0.5*period ) % period ) / period for t in time ] )
     return ph
 
