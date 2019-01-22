@@ -13,7 +13,7 @@ def sort_on_x(x,y,z=None):
     yield z
 
 
-def run_alias(x,y,z=None):
+def run_aliasing(x,y,z=None):
     ax,ay,az = [],[],[]
     for ii in range(len(x)):
         if x[ii] < -0.4:
