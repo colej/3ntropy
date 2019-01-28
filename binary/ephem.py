@@ -2,10 +2,12 @@ import numpy as np
 
 def sort_on_x(x,y,z=None):
     if z is not None:
-        zipp = list(zip(x,y,z)).sort(key=lambda x:x[0])
+        zipp = list(zip(x,y,z))
+        zipp.sort(key=lambda x:x[0])
         x,y,z = list(zip(*zipp))
     else:
-        zipp = list(zip(x,y)).sort(key=lambda x:x[0])
+        zipp = list(zip(x,y))
+        zipp.sort(key=lambda x:x[0])
         x,y = list(zip(*zipp))
         z = None
     yield x
