@@ -329,7 +329,7 @@ def write_mesa_inlist_ms_transition(  inlist, history_file, logsdir,
 
 def write_mesa_inlist_post_ms(  inlist, history_file, logsdir,
                                 initial_Y, initial_Z, initial_mass,
-                                mlt_alpha, log_minDmix, log_Dext,
+                                mlt_alpha, log_minDmix,
                                 overshoot_f,
                                 overshoot_f0=0.002,
                                 tams_model_file='tams.model',
@@ -349,10 +349,9 @@ def write_mesa_inlist_post_ms(  inlist, history_file, logsdir,
                 'INITIAL_Y'                     : '{:6.5f}d0'.format(initial_Y),
                 'INITIAL_Z'                     : '{:6.5f}d0'.format(initial_Z),
                 'INITIAL_MASS'                  : '{:8.6f}d0'.format(initial_mass),
-                'OVERSHOOT_F_ABOVE_BURN_H_CORE' : '{:5.4f}d0'.format(overshoot_f+overshoot_f0),
+                'OVERSHOOT_F_ABOVE_BURN_CORE'   : '{:5.4f}d0'.format(overshoot_f+overshoot_f0),
                 'MIXING_LENGTH_ALPHA'           : '{:5.4f}d0'.format(mlt_alpha),
                 'MIN_D_MIX'                     : '{:8.4f}d0'.format(10**log_minDmix),
-                'D_EXT'                         : '{:5.4f}d0'.format(10**log_Dext),
                         }
 
         new_lines = []
