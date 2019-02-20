@@ -72,7 +72,7 @@ def ph_to_time (phase, period, t0, norb):
     return time
 
 
-def calc_sup_conj_phase(omega,ecc):
+def calc_sup_conj_and_periastron_phase(omega,ecc):
     '''
     routine to calculate the phase of superior conjuction
     and phase of periastron
