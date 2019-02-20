@@ -72,15 +72,15 @@ def ph_to_time (phase, period, t0, norb):
     return time
 
 
-def calc_sup_conj_phase(omega,eps):
+def calc_sup_conj_phase(omega,ecc):
     '''
     routine to calculate the phase of superior conjuction
     and phase of periastron
 
     '''
 
-    ecc_anomoly    = 2.*np.arctan( np.tan( 0.25*np.pi - 0.5*omega )*((1.+eps)/(1.-eps))**-0.5 )
-    mean_anomoly   = ecc_anomoly-eps*np.sin(ecc_anomoly)
+    ecc_anomoly    = 2.*np.arctan( np.tan( 0.25*np.pi - 0.5*omega )*((1.+ecc)/(1.-ecc))**-0.5 )
+    mean_anomoly   = ecc_anomoly-ecc*np.sin(ecc_anomoly)
 
     phase_sup_conj = 0.5*(mean_anomoly+omega)/np.pi - 0.25
     phase_periast  = phase_sup_conj - 0.5*mean_anomoly/np.pi
