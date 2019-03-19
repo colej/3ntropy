@@ -365,3 +365,44 @@ def write_mesa_inlist_post_ms(  inlist, history_file, logsdir,
         with open(inlist, 'w') as f:
                 f.writelines(new_lines)
         return
+
+def write_mesa_inlist_He_ms(  inlist, history_file, logsdir,
+                                 initial_Y, initial_Z, initial_mass,
+                                 mlt_alpha, log_minDmix, log_Dext,
+                                 overshoot_f, overshoot_f0=0.002,
+                                 rgbtip_model_file='zams.model',
+                                 HeTAMS_model_file = 'tams.model',
+                                 HeTAMS_profile_file = 'tams.profile',
+                                 HeTAMS_pulse_file = 'tams.pulse',
+                                 base_inlist=os.path.expandvars('$VSC_DATA/python/mesa/inlist_MAMSIE_BASE_VSCGRID')):
+
+        print('WRITING INLIST: {}'.format(inlist))
+        with open(base_inlist, 'r') as f:
+                lines = f.readlines()
+        replacements = {
+		        'RGBTIP_MODEL_FILENAME'           : '{}'.format("'"+rgbtip_model_file+"'"),
+		        'HeTAMS_MODEL_FILENAME'           : '{}'.format("'"+HeTAMS_model_file+"'"),
+		        'HeTAMS_PROFILE_FILENAME'         : '{}'.format("'"+HeTAMS_profile_file+"'"),
+		        'HeTAMS_PULSE_FILENAME'           : '{}'.format("'"+HeTAMS_pulse_file+"'"),
+                'STAR_HISTORY_NAME'             : '{}'.format("'"+history_file+"'"),
+                'LOGS_DIR'                      : '{}'.format("'"+logsdir+"'"),
+                'INITIAL_Y'                     : '{:6.5f}d0'.format(initial_Y),
+                'INITIAL_Z'                     : '{:6.5f}d0'.format(initial_Z),
+                'INITIAL_MASS'                  : '{:8.6f}d0'.format(initial_mass),
+                'OVERSHOOT_F_ABOVE_BURN_H_CORE' : '{:5.4f}d0'.format(overshoot_f+overshoot_f0),
+                'MIXING_LENGTH_ALPHA'           : '{:5.4f}d0'.format(mlt_alpha),
+                'MIN_D_MIX'                     : '{:8.4f}d0'.format(10**log_minDmix),
+                'D_EXT'                         : '{:5.4f}d0'.format(10**log_Dext),
+                        }
+
+        new_lines = []
+        for line in lines:
+                new_line = line
+                for key in replacements:
+                        if (replacements[key] != ''):
+                                new_line = new_line.replace(key, replacements[key])
+                new_lines.append(new_line)
+
+        with open(inlist, 'w') as f:
+                f.writelines(new_lines)
+        return
