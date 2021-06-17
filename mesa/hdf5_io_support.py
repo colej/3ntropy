@@ -234,7 +234,7 @@ def get_profile_attributes(filename):
     ## Create data-types to be used
     dtype_i32_le     = np.dtype('<i4') ## 32-bit int
     dtype_i64_le     = np.dtype('<i8') ## 64-bit int
-    dtype_f64_le     = np.dtype('<f8') ## 64-bit float
+    dtype_s64_le     = np.dtype('a25') ## string of length 25 characters
 
     ## The dtype for the first row is i32
     ## The second row will be the attribute names
@@ -252,7 +252,7 @@ def get_profile_attributes(filename):
             if ( (ii==0) or (ii==1)):
                 select_dtype = dtype_i64_le
             else:
-                select_dtype = dtype_f64_le
+                select_dtype = dtype_s64_le
 
             attrs_cast = np.array([value]).astype(select_dtype,order='F')
             attrs_data.append( attrs_cast[0] )
@@ -320,7 +320,7 @@ def get_history_attributes(filename):
     ## Create data-types to be used
     dtype_i32_le     = np.dtype('<i4') ## 32-bit int
     dtype_i64_le     = np.dtype('<i8') ## 64-bit int
-    dtype_f64_le     = np.dtype('<f8') ## 64-bit float
+    dtype_s64_le     = np.dtype('a25') ## string of length 25 characters
 
     ## The dtype for the first row is i32
     ## The second row will be the attribute names
@@ -338,9 +338,9 @@ def get_history_attributes(filename):
             if (ii==0):
                 select_dtype = dtype_i64_le
             else:
-                select_dtype = dtype_f64_le
+                select_dtype = dtype_s64_le
 
-            attrs_cast = np.array([value]).astype(select_dtype,order='F')
+            attrs_cast = np.array([value.replace('"','')]).astype(select_dtype,order='F')
             attrs_data.append( attrs_cast[0] )
             attrs_dtypes.append( select_dtype )
 
